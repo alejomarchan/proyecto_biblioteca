@@ -1,0 +1,32 @@
+Estimados, a continuación les dejo la consigna del trabajo práctico que deberán presentar en la fecha de final.
+- tendrán que llevar el archivo .py para poder ejecutarlo en el momento, un archivo .py con la creación de la base, tablas y la inserción de algunos datos de prueba. Y los archivos que ustedes consideren necesarios.
+- condición de aprobación (es un 4): que el sistema funcione,
+* tendrá mayor nota quienes coloquen validaciones, ya sea de ingresos o datos lógicos (por ejemplo, querer dar de baja un cliente que tiene libro/pelicula en préstamo).
+* tendrá un 10 aquel grupo al que NO le encuentre NINGÚN error.
+
+Gestion de VideoClub / Biblioteca:
+- Tendrán como mínimo las siguientes tablas:
+    1) clientes : con los siguientes campos: DNI, Nombre Completo, Telefono, direccion, estado.
+    2) peliculas (para el videoclub): campos: código de barra, titulo, genero, estado
+    2) libros (para la biblioteca) : campos: ISBN, Titulo, Autor, estado.
+    3) prestamo: id, DNI cliente, código de barra (caso videoclub) o IBSN (caso biblioteca), estado.
+
+Deberán mostrar un menú con las siguientes opciones:
+   0 - Consulta de disponibilidad (de un libro/pelicula, solo debe responder "Disponible" o "En préstamo al cliente ..Pepe..")
+   1 - Préstamo de Libro / Película : puede tener un sub-Menú que tenga las opciones:
+        A - Consultar todos los títulos/películas disponible (verificando el campo estado)
+        B - Registrar préstamo (deberá buscar el libro o película y cambiar el campo de estado a "P" de prestado y en el cliente con "O" de ocupado)
+        C - Registrar Devolución (pedir datos necesarios para buscar el cliente y libro o pelicula y cambiar el campo de estado dejándolo con "D" de disponible)
+    2 - Gestión del cliente: tendrá un sub-menú:
+        A - Alta de cliente
+        C - Consulta estado del cliente
+        M - Modificar teléfono o direccion del cliente
+        E - Eliminar cliente (puede ser una baja lógica, es decir, cambiar su estado por ejemplo a Inahibilitado o Baja en lugar de eliminar al cliente).
+    3 - Gestión de Libro / Película: tendrá un sub-menu:
+        A - Alta de Libro / película
+        C - Consultar un libro/película (mostrando todos sus datos)
+        M - Modificar Libro
+        E - Eliminar Libro
+
+Grupos que deberán hacer Gestión de Biblioteca: 2, 4, 6, 8.
+Grupos que deberán hacer Gestión de VideoClub: 1, 3, 5, 7, 9.
