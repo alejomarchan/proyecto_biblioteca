@@ -1,4 +1,5 @@
 import os
+import database as db
 
 def despliega_menu(menu):
     for key, values in menu.items():
@@ -95,4 +96,6 @@ def sub_menu_prestamo():
 
 
 if __name__ == "__main__":
+    conn = db.ConDatabase()
     menu_general()
+    conn.close()
