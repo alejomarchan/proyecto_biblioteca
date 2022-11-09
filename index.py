@@ -97,5 +97,8 @@ def sub_menu_prestamo():
 
 if __name__ == "__main__":
     conn = db.ConDatabase()
-    menu_general()
+    #menu_general()
+    sql='show databases'
+    salida = conn.sql_query(sql)
+    print(type(salida))
     conn.close()

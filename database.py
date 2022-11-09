@@ -10,24 +10,26 @@ class ConDatabase:
         }
         #global conn
         #Configuracion de la conexión a Base de Datos
-        MYSQL_HOST = 'localhost'
-        MYSQL_USER = 'root'
-        MYSQL_PASSWORD = '1234'
-        MYSQL_DB = 'abl_telefonica'
         self.conn = None
         try:
             print("Se va iniciar la conexión a la Base de Datos...")
             self.conn = mariadb.connect(**conn_params)
             print("Se estableció Conexión!")
+            self.cur = self.conn.cursor()
         except mariadb.DatabaseError as err:
             print("Hubo un error en la conexión --> : {}".format(err))
         else:
             print("Connection established")
-
-    def connection(self):
-        return self.conn
       
     def close(self):
         if self.conn:
             print("Cerrando sesión")
             self.conn.close()
+
+    def sql_query(self, consulta):
+        try:
+            print(self.cur)
+            salida = self.cur.execute(consulta)
+            return salida
+        except mariadb.Error as e:
+            print(f"Error: {e}")
