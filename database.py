@@ -1,13 +1,17 @@
 import mariadb
+import json
 
 class ConDatabase:
     def __init__(self):
+        with open('./conf/conf_general.json', 'r') as conf_file:
+            config = json.load(conf_file)
         conn_params= {
-            "user" : "root",
-            "password" : "admin",
-            "host" : "127.0.0.1",
-            "port" : 3308
+            "user" : config["CONFIG"]["USER"],
+            "password" : config["CONFIG"]["PASS"],
+            "host" : config["CONFIG"]["HOST"],
+            "port" : config["CONFIG"]["PORT"]
         }
+
         #global conn
         #Configuracion de la conexión a Base de Datos
         self.conn = None
@@ -26,10 +30,14 @@ class ConDatabase:
             print("Cerrando sesión")
             self.conn.close()
 
-    def sql_query(self, consulta):
+    def ret_fetchall(self):
+        for i in self.cur.fetchall():
+            print("Pasando")
+            print(i)
+
+    def sql_query(self, consulta, parametros):
         try:
-            print(self.cur)
-            salida = self.cur.execute(consulta)
-            return salida
+            self.cur.execute(consulta,parametros)
+            return self.cur
         except mariadb.Error as e:
             print(f"Error: {e}")
