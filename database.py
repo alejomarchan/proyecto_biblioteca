@@ -5,11 +5,17 @@ class ConDatabase:
     def __init__(self):
         with open('./conf/conf_general.json', 'r') as conf_file:
             config = json.load(conf_file)
-        conn_params= {
+        self.conn_params= {
             "user" : config["CONFIG"]["USER"],
             "password" : config["CONFIG"]["PASS"],
             "host" : config["CONFIG"]["HOST"],
             "port" : config["CONFIG"]["PORT"]
+        }
+        self.tablas_bbl= {
+            "db" : config["BD"]["BD"],
+            "usuarios" : config["BD"]["USER"],
+            "libros" : config["BD"]["BOOKS"],
+            "prestamos" : config["BD"]["LOANS"]
         }
 
         #global conn
@@ -17,7 +23,7 @@ class ConDatabase:
         self.conn = None
         try:
             print("Se va iniciar la conexión a la Base de Datos...")
-            self.conn = mariadb.connect(**conn_params)
+            self.conn = mariadb.connect(**self.conn_params)
             print("Se estableció Conexión!")
             self.cur = self.conn.cursor()
         except mariadb.DatabaseError as err:
@@ -34,6 +40,9 @@ class ConDatabase:
         for i in self.cur.fetchall():
             print("Pasando")
             print(i)
+
+    def sql_fetchall(self):
+        return self.cur.fetchall()
 
     def sql_query(self, consulta, parametros):
         try:

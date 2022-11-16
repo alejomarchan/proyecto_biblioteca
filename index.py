@@ -197,10 +197,16 @@ def menu_prestamo():
 
 if __name__ == "__main__":
     conn = db.ConDatabase()
-    menu_general()
-    #ql='select * from biblioteca.usuarios'
-    #lista = [] #['Alejandro',95783601]
-    #param = tuple(i for i in lista)
-    #salida = conn.sql_query(sql,param)
-    #conn.ret_fetchall()
+    #menu_general()
+    bbl = conn.tablas_bbl
+    print(bbl['db'])
+    sql='select * from '+bbl['db']+'.'+bbl['usuarios']
+    lista = [] #['Alejandro',95783601]
+    param = tuple(i for i in lista)
+    salida = conn.sql_query(sql,param)
+    fet = conn.sql_fetchall()
+    for i in fet:
+        print(i[0],i[1],i[2],i[3],i[4],i[5])
+
+
     conn.close()

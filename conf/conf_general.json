@@ -4,5 +4,11 @@
       "PASS": "admin",
       "HOST": "127.0.0.1",
       "PORT": 3308
+    },
+    "BD": {
+      "BD" : "biblioteca",
+      "USER": "usuarios",
+      "BOOKS": "libros",
+      "LOANS": "prestamos"
     }
   }
