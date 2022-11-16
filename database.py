@@ -50,3 +50,6 @@ class ConDatabase:
             return self.cur
         except mariadb.Error as e:
             print(f"Error: {e}")
+    
+    def sql_commit(self):
+        self.conn.commit()
