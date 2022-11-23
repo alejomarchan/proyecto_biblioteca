@@ -361,8 +361,8 @@ def libros_actualiza():
         print("Modifique el valor o solamente presione Enter si no desea cambiar ese campo")
         titulo_act = input("\nModificar Titulo: {}: ".format(titulo_old) or titulo_old)
         autor_act = input("Modificar autor: {}: ".format(autor_old) or autor_old)
-        estado_act = input("Modificar Estado--> 1 para Activo, 0 para Inactivo: ".format(estado_old) or estado_old)
-        activo_act = input("Modificar Activo--> 1 para Activo, 0 para Inactivo: ".format(activo_old) or activo_old)
+        estado_act = input("Modificar Estado. Actual en {}: Presione 1 para Activo, 0 para Inactivo: ".format(estado_old) or estado_old)
+        activo_act = input("Modificar Activo. Actual en {}: Presione 1 para Activo, 0 para Inactivo: ".format(activo_old) or activo_old)
         param = (titulo_act, autor_act, estado_act,activo_act,isbn_act)
         conn.sql_query(sql_update,param)
         conn.sql_commit()
@@ -490,6 +490,7 @@ def usuario_baja():
 
 if __name__ == "__main__":
     conn = db.ConDatabase()
+    os.system('cls')
     menu_general()
     #print(bbl['db'])
     #sql='select * from '+bbl['db']+'.'+bbl['usuarios']
