@@ -1,6 +1,7 @@
 import os
 import re
 import database as db
+import time
 
 #Declaración de funciones de validación
 
@@ -101,10 +102,10 @@ def valida_isbn(isbn_par):
 
 def valida_cadena(cadena):
     if len(cadena.replace(" ", ""))>0:
-        return True
+        return False
     else:
         print("La cadena que ingresaste está vacía.")
-        return False
+        return True
 
 #Definición de funciones de interacción        
 
@@ -210,8 +211,8 @@ def menu_libros():
 def menu_usuarios():
     print("***** Menú Usuarios *****")
     menu = {
-        1: "Alta Cliente",
-        2: "Consulta Cliente",
+        1: "Consulta Cliente",
+        2: "Alta Cliente",
         3: "Actualizar Cliente",
         4: "Eliminar Cliente",
         5: "Volver al Menú Principal"
@@ -230,13 +231,13 @@ def menu_usuarios():
         else:
             #print("Eleccion correcta {}".format(ele_conv))
             if ele_conv == 1:
-                pass
+                usuarios_disponibles()
             if ele_conv == 2:
-                pass
+                usuarios_ingreso()
             if ele_conv == 3:
-                pass
+                usuario_actualiza()
             if ele_conv == 4:
-                pass
+                usuario_baja()
             if ele_conv == 5:
                 menu_general()
             else:
@@ -382,6 +383,104 @@ def libros_baja():
     conn.sql_commit()
 
     menu_libros()
+
+#Usuarios
+def usuarios_disponibles():
+    bbl = conn.tablas_bbl
+    sql = 'select dni, nombre, telefono, direccion, fecha_alta from '+bbl['db']+'.'+bbl['usuarios']+' where estado =%s'
+    lista = [1]
+    param = tuple(i for i in lista)
+    conn.sql_query(sql,param)
+    fet = conn.sql_fetchall()
+    print ("{:^45}".format('Usuarios Disponibles'))
+    print ("{:^20} {:<20} {:^20} {:^20} {:^20}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'FECHA_ALTA'))
+    for i in fet:
+        print ("{:^20} {:<20} {:^20} {:^20} {:^20}".format(i[0], i[1], i[2], i[3], i[4]))
+    input("\nPresione cualquier tecla para continuar...")
+    menu_usuarios()
+
+def usuarios_ingreso():
+    bbl = conn.tablas_bbl
+    sql = 'insert into ' +bbl['db']+'.'+bbl['usuarios']+' (dni,nombre,telefono,direccion,fecha_alta, estado) values (%s,%s,%s,%s,%s,1)'
+    flag_dni = True
+    flag_nombre = True
+    flag_telefono = True
+    flag_direccion = True
+    fecha_alta = time.strftime('%Y-%m-%d')
+    while flag_dni:
+        dni = input('Ingrese DNI: ')
+        flag_dni = valida_cadena(dni)
+    while flag_nombre:
+        nombre = input('Ingrese Nombre: ')
+        flag_nombre = valida_cadena(nombre)
+    while flag_telefono:
+        telefono = input('Ingrese telefono: ')
+        flag_telefono = valida_cadena(telefono)
+    while flag_direccion:
+        direccion = input('Ingrese Dirección: ')
+        flag_direccion = valida_cadena(direccion)
+    
+    lista = [dni, nombre, telefono, direccion, fecha_alta]
+    param = tuple(i for i in lista)
+    conn.sql_query(sql,param)
+    conn.sql_commit()
+    menu_usuarios()
+
+def usuario_actualiza():
+    bbl = conn.tablas_bbl
+    sql = 'select dni, nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['usuarios']+' order by dni'
+    sql_update = 'update '+bbl['db']+'.'+bbl['usuarios']+' set nombre=%s, telefono=%s, direccion=%s, estado=%s where dni=%s;'
+    param = tuple()
+    conn.sql_query(sql,param)
+    fet = conn.sql_fetchall()
+    print ("{:^45}".format('Usuarios modificables'))
+    print ("{:^20} {:<20} {:<20} {:^20} {:^20}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'ACTIVO'))
+    usuarios_ingresados = []
+    for i in fet:
+        print(i[0])
+        print(type(i[0]))
+        usuarios_ingresados.append(i[0])
+        print ("{:<20} {:<20} {:<20} {:^20} {:^20}".format(i[0], i[1], i[2], i[3], i[4]))
+    dni_act = int(input("\nSeleccione el DNI a modificar: "))
+    if dni_act in usuarios_ingresados:
+        sql = 'select nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['usuarios']+' order by dni'
+        param = (dni_act,)
+        conn.sql_query(sql,param)
+        fet = conn.sql_fetchall()
+        for i in fet:
+            nombre_old = i[0]
+            telefono_old = i[1]
+            direccion_old = i[2]
+            estado_old = i[3]
+        print("Modifique el valor o solamente presione Enter si no desea cambiar ese campo")
+        nombre_act = input("\nModificar Nombre: {}: ".format(nombre_old) or nombre_old)
+        telefono_act = input("Modificar Telefono: {}: ".format(telefono_old) or telefono_old)
+        direccion_act = input("Modificar Direccion: {}:".format(direccion_old) or direccion_old)
+        estado_act = input("Modificar Activo--> 1 para Activo, 0 para Inactivo: ".format(estado_old) or estado_old)
+        param = (nombre_act, telefono_act, direccion_act,estado_act,dni_act)
+        conn.sql_query(sql_update,param)
+        conn.sql_commit()
+    menu_usuarios()
+    
+def usuario_baja():
+    bbl = conn.tablas_bbl
+    sql = 'select dni, nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['usuarios']+' order by dni'
+    sql_update = 'update '+bbl['db']+'.'+bbl['usuarios']+' set estado=0 where dni=%s;'
+    param = tuple()
+    conn.sql_query(sql,param)
+    fet = conn.sql_fetchall()
+    print ("{:^45}".format('Usuarios Activos'))
+    print ("{:^20} {:<20} {:<20} {:^20} {:^20}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'ESTADO'))
+    dni_ingresados = []
+    for i in fet:
+        dni_ingresados.append(i[0])
+        print ("{:<20} {:<45} {:<25} {:^5} {:^5}".format(i[0], i[1], i[2], i[3], i[4]))
+    dni_act = input("\nSeleccione el DNI a dar de baja: ")
+    param = (dni_act,)
+    conn.sql_query(sql_update,param)
+    conn.sql_commit()
+
+    menu_usuarios()
 
 
 
