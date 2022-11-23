@@ -45,21 +45,26 @@ def valida_isbn(isbn_par):
     
     isbn_par = isbn_par.replace("-", "").replace(" ", "").upper();
     chars = list(re.sub("[- ]|^ISBN(?:-1[03])?:?", "", isbn_par))
+    match = re.search(r'^(\d{9})(\d|X)$', isbn_par)
     last = chars.pop()
-    if len(chars) == 9:
-        # Compute the ISBN-10 check digit
-        val = sum((x + 2) * int(y) for x,y in enumerate(reversed(chars)))
-        check = 11 - (val % 11)
-        if check == 10:
-            check = "X"
-        elif check == 11:
-            check = "0"
-    else:
-        # Compute the ISBN-13 check digit
-        val = sum((x % 2 * 2 + 1) * int(y) for x,y in enumerate(chars))
-        check = 10 - (val % 10)
-        if check == 10:
-            check = "0"
+    try:
+        if len(chars) == 9:
+            # Compute the ISBN-10 check digit
+            val = sum((x + 2) * int(y) for x,y in enumerate(reversed(chars)))
+            check = 11 - (val % 11)
+            if check == 10:
+                check = "X"
+            elif check == 11:
+                check = "0"
+        else:
+            # Compute the ISBN-13 check digit
+            val = sum((x % 2 * 2 + 1) * int(y) for x,y in enumerate(chars))
+            check = 10 - (val % 10)
+            if check == 10:
+                check = "0"
+    except Exception as e:
+        print("No es un ISBN {}".format(e))
+        return False
    
     if (str(check) == last):
             return True
@@ -429,11 +434,12 @@ def usuarios_ingreso():
 def usuario_actualiza():
     bbl = conn.tablas_bbl
     sql = 'select dni, nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['usuarios']+' order by dni'
-    sql_update = 'update '+bbl['db']+'.'+bbl['usuarios']+' set nombre=%s, telefono=%s, direccion=%s, estado=%s where dni=%s;'
+    sql_update = 'update '+bbl['db']+'.'+bbl['usuarios']+' set nombre=%s, telefono=%s, direccion=%s, fecha_actualizacion=%s, estado=%s where dni=%s;'
+    fecha_modificacion = time.strftime('%Y-%m-%d')
     param = tuple()
     conn.sql_query(sql,param)
     fet = conn.sql_fetchall()
-    print ("{:^45}".format('Usuarios modificables'))
+    print ("{:^45}".format('Usuarios a modificar'))
     print ("{:^20} {:<20} {:<20} {:^20} {:^20}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'ACTIVO'))
     usuarios_ingresados = []
     for i in fet:
@@ -455,7 +461,7 @@ def usuario_actualiza():
         telefono_act = input("Modificar Telefono: {}: ".format(telefono_old) or telefono_old)
         direccion_act = input("Modificar Direccion: {}:".format(direccion_old) or direccion_old)
         estado_act = input("Modificar Activo--> 1 para Activo, 0 para Inactivo: ".format(estado_old) or estado_old)
-        param = (nombre_act, telefono_act, direccion_act,estado_act,dni_act)
+        param = (nombre_act, telefono_act, direccion_act,fecha_modificacion,estado_act,dni_act)
         conn.sql_query(sql_update,param)
         conn.sql_commit()
     menu_usuarios()

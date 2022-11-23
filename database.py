@@ -49,7 +49,7 @@ class ConDatabase:
             self.cur.execute(consulta,parametros)
             return self.cur
         except mariadb.Error as e:
-            print(f"Error: {e}")
+            print(f"Error en ejecución: {e}")
     
     def sql_commit(self):
         self.conn.commit()
