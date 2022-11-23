@@ -395,7 +395,7 @@ def usuarios_disponibles():
     print ("{:^45}".format('Usuarios Disponibles'))
     print ("{:^20} {:<20} {:^20} {:^20} {:^20}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'FECHA_ALTA'))
     for i in fet:
-        print ("{:^20} {:<20} {:^20} {:^20} {:^20}".format(i[0], i[1], i[2], i[3], i[4]))
+        print ("{:^20} {:<20} {:^20} {:^20} {:^20}".format(i[0], i[1], i[2], i[3], str(i[4])))
     input("\nPresione cualquier tecla para continuar...")
     menu_usuarios()
 
@@ -437,8 +437,6 @@ def usuario_actualiza():
     print ("{:^20} {:<20} {:<20} {:^20} {:^20}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'ACTIVO'))
     usuarios_ingresados = []
     for i in fet:
-        print(i[0])
-        print(type(i[0]))
         usuarios_ingresados.append(i[0])
         print ("{:<20} {:<20} {:<20} {:^20} {:^20}".format(i[0], i[1], i[2], i[3], i[4]))
     dni_act = int(input("\nSeleccione el DNI a modificar: "))
