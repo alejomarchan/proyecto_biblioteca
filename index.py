@@ -11,7 +11,7 @@ def despliega_menu(menu):
     para que sean visulizadas las opciones correspondientes
     """
     for key, values in menu.items():
-        print("({}) para \"{}\"".format(key, values))
+        print("({}) \"{}\"".format(key, values))
 
 def valida_numero(elemento):
     """
@@ -142,9 +142,10 @@ def menu_general():
     """
     print("***** Menú General *****")
     menu = {
-        1: "Menú Libros",
-        2: "Menú Usuarios",
-        3: "Menú Préstamos",
+        1: "Menú disponibilidad",
+        2: "Menú Libros",
+        3: "Menú Socios",
+        4: "Menú Préstamos",
         0: "Salir"
     }
     #Pasa por parámetro el diccionario con los elementos del respectivo Menú
@@ -164,12 +165,14 @@ def menu_general():
         else:
             #print("Eleccion correcta {}".format(ele_conv))
             if ele_conv == 1:
-                os.system('cls')
-                menu_libros()
+                print("Sub menu Disponibilidad de Libros")
             if ele_conv == 2:
                 os.system('cls')
-                menu_usuarios()
+                menu_libros()
             if ele_conv == 3:
+                os.system('cls')
+                menu_socios()
+            if ele_conv == 4:
                 os.system('cls')
                 menu_prestamo()
             else:
@@ -213,13 +216,13 @@ def menu_libros():
             else:
                 exit
     
-def menu_usuarios():
-    print("***** Menú Usuarios *****")
+def menu_socios():
+    print("***** Menú socios *****")
     menu = {
-        1: "Consulta Cliente",
-        2: "Alta Cliente",
-        3: "Actualizar Cliente",
-        4: "Eliminar Cliente",
+        1: "Consulta Socios",
+        2: "Alta Socio",
+        3: "Actualizar Socio",
+        4: "Eliminar Socio",
         5: "Volver al Menú Principal"
     }
     despliega_menu(menu)
@@ -227,18 +230,18 @@ def menu_usuarios():
     if not valida_numero(eleccion):
         os.system('cls')
         imprime_respuesta('no_numero')
-        menu_usuarios()
+        menu_socios()
     else:
         ele_conv = int(eleccion)
         if not valida_eleccion(menu,ele_conv):
             imprime_respuesta('no_eleccion')
-            menu_usuarios()
+            menu_socios()
         else:
-            #print("Eleccion correcta {}".format(ele_conv))
+            #print("Eleccion correcta {}".format(ele_conv))            
             if ele_conv == 1:
-                usuarios_disponibles()
+                socios_disponibles()
             if ele_conv == 2:
-                usuarios_ingreso()
+                socios_ingreso()
             if ele_conv == 3:
                 usuario_actualiza()
             if ele_conv == 4:
@@ -279,7 +282,6 @@ def menu_prestamo():
 
 
 #Definición de funciones de cada proceso
-
 #Libros
 def libros_disponibles():
     bbl = conn.tablas_bbl
@@ -318,6 +320,8 @@ def libros_ingreso():
     while flag_isbn:
         isbn = input('Ingrese ISBN: ')
         if valida_isbn(isbn):
+            isbn.upper()
+            isbn = isbn.replace("-", "").replace(" ", "").replace("ISBN","").upper();
             flag_isbn = False
         else:
             flag_isbn = True
@@ -389,24 +393,24 @@ def libros_baja():
 
     menu_libros()
 
-#Usuarios
-def usuarios_disponibles():
+#socios
+def socios_disponibles():
     bbl = conn.tablas_bbl
-    sql = 'select dni, nombre, telefono, direccion, fecha_alta from '+bbl['db']+'.'+bbl['usuarios']+' where estado =%s'
+    sql = 'select dni, nombre, telefono, direccion, fecha_alta from '+bbl['db']+'.'+bbl['socios']+' where estado =%s'
     lista = [1]
     param = tuple(i for i in lista)
     conn.sql_query(sql,param)
     fet = conn.sql_fetchall()
-    print ("{:^45}".format('Usuarios Disponibles'))
+    print ("{:^45}".format('Socios Disponibles'))
     print ("{:^20} {:<20} {:^20} {:^20} {:^20}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'FECHA_ALTA'))
     for i in fet:
         print ("{:^20} {:<20} {:^20} {:^20} {:^20}".format(i[0], i[1], i[2], i[3], str(i[4])))
     input("\nPresione cualquier tecla para continuar...")
-    menu_usuarios()
+    menu_socios()
 
-def usuarios_ingreso():
+def socios_ingreso():
     bbl = conn.tablas_bbl
-    sql = 'insert into ' +bbl['db']+'.'+bbl['usuarios']+' (dni,nombre,telefono,direccion,fecha_alta, estado) values (%s,%s,%s,%s,%s,1)'
+    sql = 'insert into ' +bbl['db']+'.'+bbl['socios']+' (dni,nombre,telefono,direccion,fecha_alta, estado) values (%s,%s,%s,%s,%s,1)'
     flag_dni = True
     flag_nombre = True
     flag_telefono = True
@@ -429,25 +433,25 @@ def usuarios_ingreso():
     param = tuple(i for i in lista)
     conn.sql_query(sql,param)
     conn.sql_commit()
-    menu_usuarios()
+    menu_socios()
 
 def usuario_actualiza():
     bbl = conn.tablas_bbl
-    sql = 'select dni, nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['usuarios']+' order by dni'
-    sql_update = 'update '+bbl['db']+'.'+bbl['usuarios']+' set nombre=%s, telefono=%s, direccion=%s, fecha_actualizacion=%s, estado=%s where dni=%s;'
+    sql = 'select dni, nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['socios']+' order by dni'
+    sql_update = 'update '+bbl['db']+'.'+bbl['socios']+' set nombre=%s, telefono=%s, direccion=%s, fecha_actualizacion=%s, estado=%s where dni=%s;'
     fecha_modificacion = time.strftime('%Y-%m-%d')
     param = tuple()
     conn.sql_query(sql,param)
     fet = conn.sql_fetchall()
-    print ("{:^45}".format('Usuarios a modificar'))
+    print ("{:^45}".format('socios a modificar'))
     print ("{:^20} {:<20} {:<20} {:^20} {:^20}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'ACTIVO'))
-    usuarios_ingresados = []
+    socios_ingresados = []
     for i in fet:
-        usuarios_ingresados.append(i[0])
+        socios_ingresados.append(i[0])
         print ("{:<20} {:<20} {:<20} {:^20} {:^20}".format(i[0], i[1], i[2], i[3], i[4]))
     dni_act = int(input("\nSeleccione el DNI a modificar: "))
-    if dni_act in usuarios_ingresados:
-        sql = 'select nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['usuarios']+' order by dni'
+    if dni_act in socios_ingresados:
+        sql = 'select nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['socios']+' where dni=%s order by dni'
         param = (dni_act,)
         conn.sql_query(sql,param)
         fet = conn.sql_fetchall()
@@ -456,24 +460,24 @@ def usuario_actualiza():
             telefono_old = i[1]
             direccion_old = i[2]
             estado_old = i[3]
-        print("Modifique el valor o solamente presione Enter si no desea cambiar ese campo")
-        nombre_act = input("\nModificar Nombre: {}: ".format(nombre_old) or nombre_old)
-        telefono_act = input("Modificar Telefono: {}: ".format(telefono_old) or telefono_old)
-        direccion_act = input("Modificar Direccion: {}:".format(direccion_old) or direccion_old)
-        estado_act = input("Modificar Activo--> 1 para Activo, 0 para Inactivo: ".format(estado_old) or estado_old)
+        print("Modifique el valor o solamente presione Enter si no desea cambiar ese campo\n")
+        nombre_act = input("Modificar Nombre: {}: ".format(nombre_old)) or nombre_old
+        telefono_act = input("Modificar Telefono: {}: ".format(telefono_old)) or telefono_old
+        direccion_act = input("Modificar Direccion: {}:".format(direccion_old)) or direccion_old
+        estado_act = input("Modificar Activo--> 1 para Activo, 0 para Inactivo: ".format(estado_old)) or estado_old
         param = (nombre_act, telefono_act, direccion_act,fecha_modificacion,estado_act,dni_act)
         conn.sql_query(sql_update,param)
         conn.sql_commit()
-    menu_usuarios()
+    menu_socios()
     
 def usuario_baja():
     bbl = conn.tablas_bbl
-    sql = 'select dni, nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['usuarios']+' order by dni'
-    sql_update = 'update '+bbl['db']+'.'+bbl['usuarios']+' set estado=0 where dni=%s;'
+    sql = 'select dni, nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['socios']+' order by dni'
+    sql_update = 'update '+bbl['db']+'.'+bbl['socios']+' set estado=0 where dni=%s;'
     param = tuple()
     conn.sql_query(sql,param)
     fet = conn.sql_fetchall()
-    print ("{:^45}".format('Usuarios Activos'))
+    print ("{:^45}".format('socios Activos'))
     print ("{:^20} {:<20} {:<20} {:^20} {:^20}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'ESTADO'))
     dni_ingresados = []
     for i in fet:
@@ -484,7 +488,7 @@ def usuario_baja():
     conn.sql_query(sql_update,param)
     conn.sql_commit()
 
-    menu_usuarios()
+    menu_socios()
 
 
 
@@ -493,7 +497,7 @@ if __name__ == "__main__":
     os.system('cls')
     menu_general()
     #print(bbl['db'])
-    #sql='select * from '+bbl['db']+'.'+bbl['usuarios']
+    #sql='select * from '+bbl['db']+'.'+bbl['socios']
     #lista = [] #['Alejandro',95783601]
     #param = tuple(i for i in lista)
     #salida = conn.sql_query(sql,param)

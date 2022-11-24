@@ -7,7 +7,7 @@
     },
     "BD": {
       "BD" : "biblioteca",
-      "USER": "usuarios",
+      "PARTNER": "usuarios",
       "BOOKS": "libros",
       "LOANS": "prestamos"
     }

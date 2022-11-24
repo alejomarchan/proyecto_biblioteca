@@ -13,7 +13,7 @@ class ConDatabase:
         }
         self.tablas_bbl= {
             "db" : config["BD"]["BD"],
-            "usuarios" : config["BD"]["USER"],
+            "socios" : config["BD"]["PARTNER"],
             "libros" : config["BD"]["BOOKS"],
             "prestamos" : config["BD"]["LOANS"]
         }
