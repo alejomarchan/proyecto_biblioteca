@@ -52,10 +52,11 @@ commit;
 create table biblioteca.prestamos(
 id_prestamo integer,
 dni integer,
-IBSN varchar(20),
+ISBN varchar(20),
 fecha_prestamo date,
 fecha_devolucion date,
-devuelto boolean,
+devuelto BOOLEAN,
+PRIMARY KEY (id_prestamo),
 FOREIGN KEY (dni) REFERENCES usuarios(dni),
-FOREIGN KEY (IBSN) REFERENCES libros(IBSN)
-)
+FOREIGN KEY (ISBN) REFERENCES libros(ISBN)
+);
