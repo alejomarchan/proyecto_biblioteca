@@ -12,7 +12,7 @@ Gestion de VideoClub / Biblioteca:
     3) prestamo: id, DNI cliente, código de barra (caso videoclub) o IBSN (caso biblioteca), estado.
 
 Deberán mostrar un menú con las siguientes opciones:
-   0 - Consulta de disponibilidad (de un libro/pelicula, solo debe responder "Disponible" o "En préstamo al cliente ..Pepe..")
+   0 - Consulta de disponibilidad (de un libro/pelicula, solo debe responder "Disponible" o "En préstamo al cliente ..Pepe..") **Solicitar ISBN para ver si anda**
    1 - Préstamo de Libro / Película : puede tener un sub-Menú que tenga las opciones:
         A - Consultar todos los títulos/películas disponible (verificando el campo estado)
         B - Registrar préstamo (deberá buscar el libro o película y cambiar el campo de estado a "P" de prestado y en el cliente con "O" de ocupado)
