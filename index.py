@@ -81,7 +81,7 @@ def valida_cadena(cadena):
 
 def valida_dni_prestamo(dni, existencia):
     """
-    Toma como parámetro la seleccion del usuario (elemento) y valida si es numérico4
+    Toma como parámetro la seleccion del usuario (elemento) y valida si es numérico
     """
     if existencia == "existe":
         sql_existe = "SELECT estado, COUNT(*) from biblioteca.usuarios where dni=%s GROUP BY estado;"
@@ -163,7 +163,7 @@ def menu_general():
         else:
             #print("Eleccion correcta {}".format(ele_conv))
             if ele_conv == 1:
-                print("Sub menu Disponibilidad de Libros")
+                menu_disponibilidad()
             if ele_conv == 2:
                 os.system('cls')
                 menu_libros()
@@ -176,6 +176,23 @@ def menu_general():
             else:
                 exit
 
+
+#Menú Disponibilidad
+def menu_disponibilidad():
+    sql = 'SELECT li.isbn, li.titulo, li.autor, coalesce(CONCAT("Prestado a ", us.nombre," DNI " , cast(us.dni AS char)), "Disponible") AS "Nombre" from '+ bbl['db']+'.'+bbl['libros']+' li left JOIN '+ bbl['db']+'.'+bbl['prestamos']+' pr ON (li.isbn=pr.ISBN AND pr.devuelto=0) LEFT JOIN '+ bbl['db']+'.'+bbl['socios']+' us ON (us.dni=pr.dni) WHERE li.isbn = %s'
+    isbn = input("Ingrese ISBN: ")
+    param = (isbn,)
+    conn.sql_query(sql,param)
+    fet = conn.sql_fetchall()
+    print ("{:^45}".format('Libros Disponibles'))
+    print ("{:^20} {:^30} {:^20} {:^30}".format('ISBN','TITULO','AUTOR', 'DISPONIBILIDAD'))
+    for i in fet:
+        print ("{:^20} {:<30} {:^20} {:^30}".format(i[0], i[1], i[2], i[3]))
+    input("\nPresione cualquier tecla para continuar...")
+    menu_general()
+
+
+#Menú Libros
 def menu_libros():
     print("***** Menú Libros *****")
     menu = {
@@ -440,7 +457,7 @@ def socios_disponibles():
 
 def socios_disponibles_dni():
     bbl = conn.tablas_bbl
-    sql = 'select dni, nombre, telefono, direccion, fecha_alta, fecha_actualizacion, estado from '+bbl['db']+'.'+bbl['socios']+' where dni=%s'
+    sql = 'SELECT us.dni, us.nombre, us.direccion, li.titulo, pr.fecha_prestamo FROM '+ bbl['db']+'.'+bbl['socios']+' us LEFT JOIN '+ bbl['db']+'.'+bbl['prestamos']+ ' pr ON (us.dni=pr.dni AND pr.devuelto=0) left JOIN '+ bbl['db']+'.'+bbl['libros']+' li ON (li.isbn=pr.ISBN) WHERE us.dni=%s'
     flag_dni = True
     while flag_dni:
         dni = input('Ingrese DNI: ')
@@ -450,13 +467,9 @@ def socios_disponibles_dni():
     conn.sql_query(sql,param)
     fet = conn.sql_fetchall()
     print ("{:^45}".format('Socios Disponibles'))
-    print ("{:^15} {:<15} {:^15} {:^20} {:^15} {:^15} {:^10}".format('DNI','NOMBRE','TELEFONO', 'DIRECCION', 'FECHA_ALTA', 'FECHA_ACT', 'ESTADO'))
     for i in fet:
-        if i[6]==1:
-            estado="Activo"
-        else:
-            estado="Inactivo"
-        print("{:^15} {:<15} {:^15} {:^20} {:^15} {:^15} {:^10}".format(i[0], i[1], i[2], i[3], str(i[4]), str(i[5] or ""), estado))
+        print ("{:^15} {:<15} {:^15} {:^20}".format('DNI','NOMBRE', 'DIRECCION' ,'LIBROS'))
+        print("{:^15} {:<15} {:^15} {:^20}".format(i[0], i[1], i[2],str(i[3] or "Sin Préstamos Activos")))
     input("\nPresione cualquier tecla para continuar...")
     menu_socios()    
 
@@ -609,49 +622,42 @@ def libros_devolucion():
     bbl = conn.tablas_bbl
     #Querys de actualización
     fecha = time.strftime('%Y-%m-%d')
-    sql_update_prest_libro = 'UPDATE '+bbl['db']+'.'+bbl['libros']+ ' a JOIN ' +bbl['db']+'.'+bbl['prestamos'] + ' b ON (a.isbn = b.isbn) SET a.estado=1, b.devuelto = 1,  b.fecha_devolucion = %s WHERE a.isbn = %d AND b.devuelto = 0;'
-    sql_libros = 'select isbn from '+bbl['db']+'.'+bbl['prestamos']+' where devuelto=0'
+    sql_update_prest_libro = 'UPDATE '+bbl['db']+'.'+bbl['libros']+ ' a JOIN ' +bbl['db']+'.'+bbl['prestamos'] + ' b ON (a.isbn = b.isbn) SET a.estado=1, b.devuelto = 1,  b.fecha_devolucion = %s WHERE b.dni = %d AND b.devuelto = 0;'
+    sql_libros = 'select dni from '+bbl['db']+'.'+bbl['prestamos']+' where devuelto=0'
     param = tuple()
     conn.sql_query(sql_libros,param)
-    libros_prestados = []
+    libros_dni_prestados = []
     fet = conn.sql_fetchall()
     for i in fet:
-            libros_prestados.append(i[0])
+            libros_dni_prestados.append(i[0])
     
-    print(libros_prestados)
+    print(libros_dni_prestados)
     cont_flag = 0
     flag_isbn = True
     while flag_isbn:
-        isbn = input("Ingrese ISBN del libro a Devolver: ")
-        flag_isbn = False
-        if isbn not in libros_prestados:
-            print("Libro no está prestado. Ingrese el ISBN a devolver")
-            flag_isbn = True
-        cont_flag = cont_flag+1
+        dni = int(input("Ingrese DNI del usuario: "))
+        if not valida_dni_prestamo(dni, "existe"):
+            print("El usuario ingresado no existe")
+        else:
+            flag_isbn = False
+            if dni not in libros_dni_prestados:
+                print("Este usuario no tiene préstamos. Reingrese DNI")
+                flag_isbn = True
+            cont_flag = cont_flag+1
         if cont_flag>2 and flag_isbn:
-            print("Cantidad de intentos erróneos con el ISBN")
-            libros_devolucion()
+            print("Cantidad de intentos erróneos con el DNI")
+            menu_prestamo()
         if cont_flag>0 and flag_isbn>0:
             print("Le quedan {} intentos".format(intentos-cont_flag))
             flag_isbn = True
-    param = (fecha, isbn)
+    param = (fecha, dni)
     conn.sql_query(sql_update_prest_libro,param)
     conn.sql_commit()
     menu_prestamo()
 
-    """
-    print ("{:^45}".format('Libros Disponibles'))
-    print ("{:^20} {:<50} {:^10}".format('ISBN','TITULO','AUTOR'))
-    for i in fet:
-        print ("{:<20} {:<50} {:<10}".format(i[0], i[1], i[2]))
-    input("\nPresione cualquier tecla para continuar...")
-    menu_libros()
-    """
-
-
-
 if __name__ == "__main__":
     conn = db.ConDatabase()
+    bbl = conn.tablas_bbl
     os.system('cls')
     menu_general()
     conn.close()
