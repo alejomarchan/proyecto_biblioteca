@@ -84,7 +84,7 @@ def valida_dni_prestamo(dni, existencia):
     Toma como parámetro la seleccion del usuario (elemento) y valida si es numérico
     """
     if existencia == "existe":
-        sql_existe = "SELECT estado, COUNT(*) from biblioteca.usuarios where dni=%s GROUP BY estado;"
+        sql_existe = "SELECT estado, COUNT(*) from {}.usuarios where dni=%s GROUP BY estado;".format(database)
         param = (dni,)
         conn.sql_query(sql_existe,param)
         fet = conn.sql_fetchall()
@@ -99,7 +99,7 @@ def valida_dni_prestamo(dni, existencia):
             print("No existe como Usuario este DNI")
             return False
     elif existencia=="prestamos":
-        sql_existe = "SELECT COUNT(*) from biblioteca.prestamos where dni=%s and devuelto = 0;"
+        sql_existe = "SELECT COUNT(*) from {}.prestamos where dni=%s and devuelto = 0;".format(database)
         param = (dni,)
         conn.sql_query(sql_existe,param)
         fet = conn.sql_fetchall()
@@ -179,7 +179,7 @@ def menu_general():
 
 #Menú Disponibilidad
 def menu_disponibilidad():
-    sql = 'SELECT li.isbn, li.titulo, li.autor, coalesce(CONCAT("Prestado a ", us.nombre," DNI " , cast(us.dni AS char)), "Disponible") AS "Nombre" from '+ bbl['db']+'.'+bbl['libros']+' li left JOIN '+ bbl['db']+'.'+bbl['prestamos']+' pr ON (li.isbn=pr.ISBN AND pr.devuelto=0) LEFT JOIN '+ bbl['db']+'.'+bbl['socios']+' us ON (us.dni=pr.dni) WHERE li.isbn = %s'
+    sql = 'SELECT li.isbn, li.titulo, li.autor, coalesce(CONCAT("Prestado a ", us.nombre," DNI " , cast(us.dni AS char)), "Disponible") AS "Nombre" from ' + database + '.'+bbl['libros']+' li left JOIN ' + database + '.'+bbl['prestamos']+' pr ON (li.isbn=pr.ISBN AND pr.devuelto=0) LEFT JOIN ' + database + '.' + bbl['socios']+' us ON (us.dni=pr.dni) WHERE li.isbn = %s'
     isbn = input("Ingrese ISBN: ")
     param = (isbn,)
     conn.sql_query(sql,param)
@@ -300,7 +300,8 @@ def menu_prestamo():
 #Libros
 def libros_disponibles():
     bbl = conn.tablas_bbl
-    sql = 'select isbn, titulo, autor from '+bbl['db']+'.'+bbl['libros']+' where estado =%s and activo=%s'
+    sql = 'select isbn, titulo, autor from ' + database + '.'+bbl['libros']+' where estado =%s and activo=%s'
+    print(sql)
     lista = [1,1]
     param = tuple(i for i in lista)
     conn.sql_query(sql,param)
@@ -310,11 +311,12 @@ def libros_disponibles():
     for i in fet:
         print ("{:<20} {:<50} {:<10}".format(i[0], i[1], i[2]))
     input("\nPresione cualquier tecla para continuar...")
+    os.system('cls')
     menu_libros()
 
 def libros_prestados():
     bbl = conn.tablas_bbl
-    sql = 'select isbn, titulo, autor from '+bbl['db']+'.'+bbl['libros']+' where estado =%s'
+    sql = 'select isbn, titulo, autor from ' + database + '.'+bbl['libros']+' where estado =%s'
     lista = [0]
     param = tuple(i for i in lista)
     conn.sql_query(sql,param)
@@ -324,11 +326,12 @@ def libros_prestados():
     for i in fet:
         print ("{:<20} {:<50} {:<10}".format(i[0], i[1], i[2]))
     input("\nPresione cualquier tecla para continuar...")
+    os.system('cls')
     menu_libros()
 
 def libros_ingreso():
     bbl = conn.tablas_bbl
-    sql = 'insert into ' +bbl['db']+'.'+bbl['libros']+' (isbn,titulo,autor,estado,activo) values (%s,%s,%s,1,1)'
+    sql = 'insert into ' + database + '.'+bbl['libros']+' (isbn,titulo,autor,estado,activo) values (%s,%s,%s,1,1)'
     flag_isbn = True
     flag_titulo = True
     flag_autor = True
@@ -355,8 +358,8 @@ def libros_ingreso():
     
 def libros_actualiza():
     bbl = conn.tablas_bbl
-    sql = 'select isbn, titulo, autor, estado, activo from '+bbl['db']+'.'+bbl['libros']+' order by isbn'
-    sql_update = 'update '+bbl['db']+'.'+bbl['libros']+' set titulo=%s, autor=%s, estado=%s, activo=%s where isbn=%s;'
+    sql = 'select isbn, titulo, autor, estado, activo from ' + database + '.'+bbl['libros']+' order by isbn;'
+    sql_update = 'update ' + database + '.'+bbl['libros']+' set titulo=%s, autor=%s, estado=%s, activo=%s where isbn=%s;'
     param = tuple()
     conn.sql_query(sql,param)
     fet = conn.sql_fetchall()
@@ -368,7 +371,7 @@ def libros_actualiza():
         print ("{:<20} {:<45} {:<25} {:^5} {:^5}".format(i[0], i[1], i[2], i[3], i[4]))
     isbn_act = input("\nSeleccione el ISBN a modificar: ")
     if isbn_act in isbn_ingresados:
-        sql = 'select isbn, titulo, autor, estado, activo from '+bbl['db']+'.'+bbl['libros']+' order by isbn'
+        sql = 'select isbn, titulo, autor, estado, activo from ' + database + '.'+bbl['libros']+' order by isbn;'
         param = tuple(i for i in isbn_act)
         conn.sql_query(sql,param)
         fet = conn.sql_fetchall()
@@ -390,8 +393,8 @@ def libros_actualiza():
 
 def libros_baja():
     bbl = conn.tablas_bbl
-    sql = 'select isbn, titulo, autor, estado, activo from '+bbl['db']+'.'+bbl['libros']+' where activo = 1 order by isbn'
-    sql_update = 'update '+bbl['db']+'.'+bbl['libros']+' set activo=0 where isbn=%s;'
+    sql = 'select isbn, titulo, autor, estado, activo from ' + database + '.'+bbl['libros']+' where activo = 1 order by isbn;'
+    sql_update = 'update ' + database + '.'+bbl['libros']+' set activo=0 where isbn=%s;'
     param = tuple()
     conn.sql_query(sql,param)
     fet = conn.sql_fetchall()
@@ -443,7 +446,7 @@ def menu_socios_disponibles():
 
 def socios_disponibles():
     bbl = conn.tablas_bbl
-    sql = 'select dni, nombre, telefono, direccion, fecha_alta from '+bbl['db']+'.'+bbl['socios']+' where estado =%s'
+    sql = 'select dni, nombre, telefono, direccion, fecha_alta from ' + database + '.'+bbl['socios']+' where estado =%s;'
     lista = [1]
     param = tuple(i for i in lista)
     conn.sql_query(sql,param)
@@ -453,11 +456,12 @@ def socios_disponibles():
     for i in fet:
         print ("{:^20} {:<20} {:^20} {:^20} {:^20}".format(i[0], i[1], i[2], i[3], str(i[4])))
     input("\nPresione cualquier tecla para continuar...")
+    os.system('cls')
     menu_socios()
 
 def socios_disponibles_dni():
     bbl = conn.tablas_bbl
-    sql = 'SELECT us.dni, us.nombre, us.direccion, li.titulo, pr.fecha_prestamo FROM '+ bbl['db']+'.'+bbl['socios']+' us LEFT JOIN '+ bbl['db']+'.'+bbl['prestamos']+ ' pr ON (us.dni=pr.dni AND pr.devuelto=0) left JOIN '+ bbl['db']+'.'+bbl['libros']+' li ON (li.isbn=pr.ISBN) WHERE us.dni=%s'
+    sql = 'SELECT us.dni, us.nombre, us.direccion, li.titulo, pr.fecha_prestamo FROM ' + database + '.'+bbl['socios']+' us LEFT JOIN ' + database + '.'+bbl['prestamos']+ ' pr ON (us.dni=pr.dni AND pr.devuelto=0) left JOIN ' + database + '.'+bbl['libros']+' li ON (li.isbn=pr.ISBN) WHERE us.dni=%s;'
     flag_dni = True
     while flag_dni:
         dni = input('Ingrese DNI: ')
@@ -471,11 +475,12 @@ def socios_disponibles_dni():
         print ("{:^15} {:<15} {:^15} {:^20}".format('DNI','NOMBRE', 'DIRECCION' ,'LIBROS'))
         print("{:^15} {:<15} {:^15} {:^20}".format(i[0], i[1], i[2],str(i[3] or "Sin Préstamos Activos")))
     input("\nPresione cualquier tecla para continuar...")
+    os.system('cls')
     menu_socios()    
 
 def socios_ingreso():
     bbl = conn.tablas_bbl
-    sql = 'insert into ' +bbl['db']+'.'+bbl['socios']+' (dni,nombre,telefono,direccion,fecha_alta, estado) values (%s,%s,%s,%s,%s,1)'
+    sql = 'insert into ' + database + '.'+bbl['socios']+' (dni,nombre,telefono,direccion,fecha_alta, estado) values (%s,%s,%s,%s,%s,1);'
     flag_dni = True
     flag_nombre = True
     flag_telefono = True
@@ -502,8 +507,8 @@ def socios_ingreso():
 
 def usuario_actualiza():
     bbl = conn.tablas_bbl
-    sql = 'select dni, nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['socios']+' order by dni'
-    sql_update = 'update '+bbl['db']+'.'+bbl['socios']+' set nombre=%s, telefono=%s, direccion=%s, fecha_actualizacion=%s, estado=%s where dni=%s;'
+    sql = 'select dni, nombre, telefono, direccion, estado from ' + database + '.'+bbl['socios']+' order by dni;'
+    sql_update = 'update ' + database + '.'+bbl['socios']+' set nombre=%s, telefono=%s, direccion=%s, fecha_actualizacion=%s, estado=%s where dni=%s;'
     fecha_modificacion = time.strftime('%Y-%m-%d')
     param = tuple()
     conn.sql_query(sql,param)
@@ -516,7 +521,7 @@ def usuario_actualiza():
         print ("{:<20} {:<20} {:<20} {:^20} {:^20}".format(i[0], i[1], i[2], i[3], i[4]))
     dni_act = int(input("\nSeleccione el DNI a modificar: "))
     if dni_act in socios_ingresados:
-        sql = 'select nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['socios']+' where dni=%s order by dni'
+        sql = 'select nombre, telefono, direccion, estado from ' + database + '.'+bbl['socios']+' where dni=%s order by dni;'
         param = (dni_act,)
         conn.sql_query(sql,param)
         fet = conn.sql_fetchall()
@@ -537,8 +542,8 @@ def usuario_actualiza():
     
 def usuario_baja():
     bbl = conn.tablas_bbl
-    sql = 'select dni, nombre, telefono, direccion, estado from '+bbl['db']+'.'+bbl['socios']+' order by dni'
-    sql_update = 'update '+bbl['db']+'.'+bbl['socios']+' set estado=0 where dni=%s;'
+    sql = 'select dni, nombre, telefono, direccion, estado from ' + database + '.'+bbl['socios']+' order by dni;'
+    sql_update = 'update ' + database + '.'+bbl['socios']+' set estado=0 where dni=%s;'
     param = tuple()
     conn.sql_query(sql,param)
     fet = conn.sql_fetchall()
@@ -559,13 +564,12 @@ def libros_prestamos():
     intentos = 3
     bbl = conn.tablas_bbl
     #Querys de actualización
-    sql_insert_prest = 'insert into '+bbl['db']+'.'+bbl['prestamos']+' (id_prestamo, dni, ISBN,fecha_prestamo, devuelto) values (%d, %d, %s, %s,%d)'
-    print(sql_insert_prest)
-    sql_update_prest_libro = 'update '+bbl['db']+'.'+bbl['libros']+' set estado =0 where isbn=%s'
+    sql_insert_prest = 'insert into ' + database + '.'+bbl['prestamos']+' (id_prestamo, dni, ISBN,fecha_prestamo, devuelto) values (%d, %d, %s, %s,%d);'
+    sql_update_prest_libro = 'update ' + database + '.'+bbl['libros']+' set estado =0 where isbn=%s;'
     fecha = time.strftime('%Y-%m-%d')
     #Querys de consulta de los libros y el id
-    sql_libros = 'select isbn, titulo from '+bbl['db']+'.'+bbl['libros']+' where estado =%s and activo=%s'
-    sql_max = 'select nvl(max(id_prestamo),0) + 1 from '+bbl['db']+'.'+bbl['prestamos']
+    sql_libros = 'select isbn, titulo from ' + database + '.'+bbl['libros']+' where estado =%s and activo=%s;'
+    sql_max = 'select nvl(max(id_prestamo),0) + 1 from ' + database + '.'+bbl['prestamos']
     param = tuple()
     conn.sql_query(sql_max,param)
     fet = conn.sql_fetchall()
@@ -622,8 +626,8 @@ def libros_devolucion():
     bbl = conn.tablas_bbl
     #Querys de actualización
     fecha = time.strftime('%Y-%m-%d')
-    sql_update_prest_libro = 'UPDATE '+bbl['db']+'.'+bbl['libros']+ ' a JOIN ' +bbl['db']+'.'+bbl['prestamos'] + ' b ON (a.isbn = b.isbn) SET a.estado=1, b.devuelto = 1,  b.fecha_devolucion = %s WHERE b.dni = %d AND b.devuelto = 0;'
-    sql_libros = 'select dni from '+bbl['db']+'.'+bbl['prestamos']+' where devuelto=0'
+    sql_update_prest_libro = 'UPDATE ' + database + '.'+bbl['libros']+ ' a JOIN ' + database + '.'+bbl['prestamos'] + ' b ON (a.isbn = b.isbn) SET a.estado=1, b.devuelto = 1,  b.fecha_devolucion = %s WHERE b.dni = %d AND b.devuelto = 0;'
+    sql_libros = 'select dni from ' + database + '.'+bbl['prestamos']+' where devuelto=0;'
     param = tuple()
     conn.sql_query(sql_libros,param)
     libros_dni_prestados = []
@@ -656,7 +660,16 @@ def libros_devolucion():
     menu_prestamo()
 
 if __name__ == "__main__":
+    database='biblioteca'
     conn = db.ConDatabase()
+    if not conn.buscarDatabase(database):
+        os.system('cls')
+        print('Ingrese Nombre de Base de Datos a crear. Por default es {}'.format(database))
+        new_database=str(input("Si solamente presionas enter queda {} como database: ".format(database)) or database)
+        print("No Existe la base de datos {} y se crea".format(new_database))
+        conn.createDatabase(new_database)
+        database=new_database
+        input("\nPresione cualquier tecla para continuar...")
     bbl = conn.tablas_bbl
     os.system('cls')
     menu_general()

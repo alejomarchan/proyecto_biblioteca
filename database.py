@@ -17,6 +17,12 @@ class ConDatabase:
             "libros" : config["BD"]["BOOKS"],
             "prestamos" : config["BD"]["LOANS"]
         }
+        fd = open('./conf/ddl_biblioteca_export.sql', 'r')
+        sqlFile = fd.read()
+        fd.close()
+
+        # all SQL commands (split on ';')
+        self.sqlCommands = sqlFile.split(';')
 
         #global conn
         #Configuracion de la conexión a Base de Datos
@@ -30,6 +36,55 @@ class ConDatabase:
             print("Hubo un error en la conexión --> : {}".format(err))
         else:
             print("Connection established")
+
+    def buscarDatabase(self,nombre):
+        """Funcion que busca si la base de datos nombre existe en Mysql
+                    Parameters
+                    ----------
+                    nombre : str
+                        Es el nombre es el esquema de la Base de Datos que queremos
+                        revisar si existe en Mariadb
+                    Return
+                    ----------
+                        True si la Base de Datos existe
+                        False si la Base de Datos no existe
+                    """
+        print("Ingresando en BuscarDatabase buscando {}".format(nombre))
+        self.cur.execute("show databases;")
+        buscur = self.sql_fetchall()
+        while True:
+            try:
+                for row in buscur:
+                    if nombre.lower() in row:
+                        return True
+                return False
+            except StopIteration:
+                return False
+                break
+
+    def createDatabase(self,nombre):
+        """Funcion que crea la base de datos en Mysql
+            Parameters
+            ----------
+            nombre : str
+                Es el nombre que se le asigna a la base de datos cuando es creada"""
+        #exis = False
+        sql = "CREATE DATABASE {}".format(nombre)
+        #buscarDatabase(db,nombre)
+        #if not buscarDatabase(nombre):
+        if not self.buscarDatabase(nombre):
+            self.cur.execute(sql)
+            print("Base de datos {} Creada con exito".format(nombre))
+            self.cur.execute("use {}".format(nombre))
+            for sql_tables in self.sqlCommands:
+            # This will skip and report errors
+            # For example, if the tables do not yet exist, this will skip over
+            # the DROP TABLE commands
+                try:
+                    print(sql_tables)
+                    self.cur.execute(sql_tables)
+                except mariadb.Error as e:
+                    print("Command skipped por error: {}. Query".format(e,sql_tables))
       
     def close(self):
         if self.conn:
