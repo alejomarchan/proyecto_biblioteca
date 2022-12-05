@@ -17,11 +17,12 @@ def valida_numero(elemento):
     """
     Toma como parámetro la seleccion del usuario (elemento) y valida si es numérico
     """
-    if elemento.isnumeric():
+    try:
+        valida = int(elemento)
         return True
-    else:
-        os.system('cls')
+    except ValueError as vp:
         return False
+        
 
 def valida_eleccion(diccionario, elemento):
     """
@@ -79,11 +80,11 @@ def valida_cadena(cadena):
         print("La cadena que ingresaste está vacía.")
         return True
 
-def valida_dni_prestamo(dni, existencia):
+def valida_dni_total(dni, existencia):
     """
     Toma como parámetro la seleccion del usuario (elemento) y valida si es numérico
     """
-    if existencia == "existe":
+    if existencia == "activo":
         sql_existe = "SELECT estado, COUNT(*) from {}.usuarios where dni=%s GROUP BY estado;".format(database)
         param = (dni,)
         conn.sql_query(sql_existe,param)
@@ -98,6 +99,16 @@ def valida_dni_prestamo(dni, existencia):
         else:
             print("No existe como Usuario este DNI")
             return False
+    if existencia == "existe":
+        sql_existe = "SELECT COUNT(*) from {}.usuarios where dni=%s;".format(database)
+        param = (dni,)
+        conn.sql_query(sql_existe,param)
+        fet = conn.sql_fetchall()
+        row = len(fet)
+        if row > 0:
+            return True
+        else:
+            return False
     elif existencia=="prestamos":
         sql_existe = "SELECT COUNT(*) from {}.prestamos where dni=%s and devuelto = 0;".format(database)
         param = (dni,)
@@ -106,6 +117,11 @@ def valida_dni_prestamo(dni, existencia):
         row = int(fet[0][0])
         if row !=0:
             print("Usuario con préstamos activo. DEVUELVE EL ANTERIOR")
+            return True
+        else:
+            return False
+    elif existencia=="valido":
+        if (len(dni.replace(" ", ""))>0) and valida_numero(dni):
             return True
         else:
             return False
@@ -486,18 +502,57 @@ def socios_ingreso():
     flag_telefono = True
     flag_direccion = True
     fecha_alta = time.strftime('%Y-%m-%d')
+    intentos = 3
+    cont_flag = 0
     while flag_dni:
+        cont_flag = cont_flag+1
         dni = input('Ingrese DNI: ')
-        flag_dni = valida_cadena(dni)
+        if not valida_dni_total(dni, "valido"):
+            print("DNI Inválido")
+            flag_dni = True
+        elif valida_dni_total(dni, "existe"):
+            print("{} Ya existe en la Base de Datos. Ingrese DNI Correcto".format(dni))
+            flag_dni = True
+        else:
+            flag_dni=False
+        if cont_flag>2 and flag_dni:
+            print("Cantidad máxima de intentos erróneos con el DNI")
+            menu_socios()
+        if cont_flag>0 and flag_dni:
+            print("Le quedan {} intentos".format(intentos-cont_flag))
+
+    cont_flag = 0
     while flag_nombre:
+        cont_flag = cont_flag+1
         nombre = input('Ingrese Nombre: ')
         flag_nombre = valida_cadena(nombre)
+        if cont_flag>2 and flag_nombre:
+            print("Cantidad máxima de intentos erróneos ingresando nombre")
+            menu_socios()
+        if cont_flag>0 and flag_nombre:
+            print("Le quedan {} intentos".format(intentos-cont_flag))
+    
+    cont_flag = 0
     while flag_telefono:
+        cont_flag = cont_flag+1
         telefono = input('Ingrese telefono: ')
         flag_telefono = valida_cadena(telefono)
+        if cont_flag>2 and flag_telefono:
+            print("Cantidad máxima de intentos erróneos ingresando Teléfono")
+            menu_socios()
+        if cont_flag>0 and flag_telefono:
+            print("Le quedan {} intentos".format(intentos-cont_flag))
+
+    cont_flag = 0
     while flag_direccion:
+        cont_flag = cont_flag+1
         direccion = input('Ingrese Dirección: ')
         flag_direccion = valida_cadena(direccion)
+        if cont_flag>2 and flag_direccion:
+            print("Cantidad máxima de intentos erróneos ingresando Dirección")
+            menu_socios()
+        if cont_flag>0 and flag_direccion:
+            print("Le quedan {} intentos".format(intentos-cont_flag))
     
     lista = [dni, nombre, telefono, direccion, fecha_alta]
     param = tuple(i for i in lista)
@@ -585,12 +640,10 @@ def libros_prestamos():
         dni = input("Ingrese dni: ")
         for i in fet:
             libros_disponibles.append(i[0])
-        if valida_dni_prestamo(dni, "existe"):
-            print("Usuario existe en la Base de Datos")
-            if valida_dni_prestamo(dni, "prestamos"):
+        if valida_dni_total(dni, "activo"):
+            if valida_dni_total(dni, "prestamos"):
                 print("Usuario con Préstamos activo, no se puede")
             else:
-                print("Puede pedir cualquier libro disponible")
                 flag_dni = False
         cont_flag = cont_flag+1
         if cont_flag>2 and flag_dni:
@@ -640,7 +693,7 @@ def libros_devolucion():
     flag_isbn = True
     while flag_isbn:
         dni = int(input("Ingrese DNI del usuario: "))
-        if not valida_dni_prestamo(dni, "existe"):
+        if not valida_dni_total(dni, "activo"):
             print("El usuario ingresado no existe")
         else:
             flag_isbn = False
