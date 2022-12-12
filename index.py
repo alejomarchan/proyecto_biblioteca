@@ -713,16 +713,8 @@ def libros_devolucion():
     menu_prestamo()
 
 if __name__ == "__main__":
-    database='biblioteca'
     conn = db.ConDatabase()
-    if not conn.buscarDatabase(database):
-        os.system('cls')
-        print('Ingrese Nombre de Base de Datos a crear. Por default es {}'.format(database))
-        new_database=str(input("Si solamente presionas enter queda {} como database: ".format(database)) or database)
-        print("No Existe la base de datos {} y se crea".format(new_database))
-        conn.createDatabase(new_database)
-        database=new_database
-        input("\nPresione cualquier tecla para continuar...")
+    database = conn.tablas_bbl['db']
     bbl = conn.tablas_bbl
     os.system('cls')
     menu_general()

@@ -1,5 +1,6 @@
 import mariadb
 import json
+import time
 
 class ConDatabase:
     def __init__(self):
@@ -85,6 +86,14 @@ class ConDatabase:
                     self.cur.execute(sql_tables)
                 except mariadb.Error as e:
                     print("Command skipped por error: {}. Query".format(e,sql_tables))
+
+    def dropDatabase(self,nombre):
+        sql = 'drop database if exists ' + nombre
+        try:
+            self.cur.execute(sql)
+        except mariadb.Error as e:
+             print("Error en Drop: {}.".format(nombre))
+        
       
     def close(self):
         if self.conn:
@@ -108,3 +117,11 @@ class ConDatabase:
     
     def sql_commit(self):
         self.conn.commit()
+
+    def timer(self, t):  
+        while t:
+            mins, secs = divmod(t, 60)
+            timer = 'Saliendo del sistema en {:02d} seg'.format(secs)
+            print(timer, end="\r")
+            time.sleep(1)
+            t -= 1
