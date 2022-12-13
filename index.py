@@ -598,7 +598,8 @@ def usuario_actualiza():
 def usuario_baja():
     bbl = conn.tablas_bbl
     sql = 'select dni, nombre, telefono, direccion, estado from ' + database + '.'+bbl['socios']+' order by dni;'
-    sql_update = 'update ' + database + '.'+bbl['socios']+' set estado=0 where dni=%s;'
+    sql_update = 'update ' + database + '.'+bbl['socios']+' set estado=0, fecha_actualizacion=%s where dni=%s;'
+    fecha_modificacion = time.strftime('%Y-%m-%d')
     param = tuple()
     conn.sql_query(sql,param)
     fet = conn.sql_fetchall()
@@ -608,10 +609,33 @@ def usuario_baja():
     for i in fet:
         dni_ingresados.append(i[0])
         print ("{:<20} {:<45} {:<25} {:^5} {:^5}".format(i[0], i[1], i[2], i[3], i[4]))
-    dni_act = input("\nSeleccione el DNI a dar de baja: ")
-    param = (dni_act,)
-    conn.sql_query(sql_update,param)
-    conn.sql_commit()
+    flag_dni = True
+    intentos = 3
+    cont_flag = 0
+    while flag_dni:
+        cont_flag = cont_flag+1
+        dni_act = input("\nSeleccione el DNI a dar de baja: ")
+        if not valida_dni_total(dni_act, "valido"):
+            print("DNI Inválido")
+            flag_dni = True
+        else:
+            flag_dni=False
+			
+        if cont_flag>2 and flag_dni:
+            print("Cantidad máxima de intentos erróneos con el DNI")
+            menu_socios()
+        if cont_flag>0 and flag_dni:
+            print("Le quedan {} intentos".format(intentos-cont_flag))
+
+
+    if valida_dni_total(dni_act, 'prestamos'):
+        print("No se puede dar de baja hasta que haga la devolución")
+        input("\nPresione cualquier tecla para continuar...")
+    else:
+        param = (fecha_modificacion, dni_act)
+        conn.sql_query(sql_update,param)
+        conn.sql_commit()
+        print("Baja Exitosa")
     menu_socios()
 
 #Préstamos
