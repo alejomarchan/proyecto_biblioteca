@@ -510,11 +510,15 @@ def socios_ingreso():
         if not valida_dni_total(dni, "valido"):
             print("DNI Inválido")
             flag_dni = True
-        elif valida_dni_total(dni, "existe"):
+        else:
+            flag_dni=False
+        
+        if not valida_dni_total(dni, "existe"):
             print("{} Ya existe en la Base de Datos. Ingrese DNI Correcto".format(dni))
             flag_dni = True
         else:
             flag_dni=False
+        
         if cont_flag>2 and flag_dni:
             print("Cantidad máxima de intentos erróneos con el DNI")
             menu_socios()
